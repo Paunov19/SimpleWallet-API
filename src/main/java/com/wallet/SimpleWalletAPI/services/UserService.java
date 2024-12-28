@@ -8,8 +8,5 @@ import java.util.List;
 
 public interface UserService {
     User register(UserRequest userRequest);
-    User getUserById(Long userId);
-    List<Wallet> getUserWallets(Long userId);
-    Wallet getPrimaryWallet(Long userId);
     User getCurrentAuthenticatedUser();
 }

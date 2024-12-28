@@ -1,5 +1,6 @@
 package com.wallet.SimpleWalletAPI.services;
 
+import com.wallet.SimpleWalletAPI.models.TransactionHistory;
 import com.wallet.SimpleWalletAPI.models.Wallet;
 import java.math.BigDecimal;
 import java.util.List;
@@ -13,4 +14,6 @@ public interface WalletService {
     Wallet depositToPrimaryWallet(BigDecimal amount);
     Wallet withdrawFromPrimaryWallet(BigDecimal amount);
     void deleteWallet(String walletCode);
+    List<TransactionHistory> getAllTransactionsHistoryForCurrentUser();
+    List<TransactionHistory> getTransactionsHistoryForWallet(String walletCode);
 }

@@ -3,19 +3,16 @@ package com.wallet.SimpleWalletAPI.services;
 import com.wallet.SimpleWalletAPI.models.User;
 import com.wallet.SimpleWalletAPI.models.Wallet;
 import com.wallet.SimpleWalletAPI.repositories.UserRepository;
-import com.wallet.SimpleWalletAPI.repositories.WalletRepository;
 import com.wallet.SimpleWalletAPI.security.services.UserDetailsImpl;
 import com.wallet.SimpleWalletAPI.templates.UserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -24,8 +21,6 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    @Autowired
-    private WalletRepository walletRepository;
 
     @Override
     @Transactional
@@ -43,28 +38,12 @@ public class UserServiceImpl implements UserService {
         primaryWallet.setWalletName("Primary Wallet");
         primaryWallet.setPrimary(true);
         primaryWallet.setUser(user);
+        String walletCode = UUID.randomUUID().toString().substring(0, 10);
+        primaryWallet.setWalletCode(walletCode);
 
         user.setPrimaryWallet(primaryWallet);
         userRepository.save(user);
         return user;
-    }
-
-    @Override
-    public User getUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-    }
-
-    @Override
-    public List<Wallet> getUserWallets(Long userId) {
-        User user = getUserById(userId);
-        return user.getWallets();
-    }
-
-    @Override
-    public Wallet getPrimaryWallet(Long userId) {
-        User user = getUserById(userId);
-        return user.getPrimaryWallet();
     }
 
     @Override
