@@ -122,7 +122,7 @@ public class WalletController {
     /**
      * Endpoint to show all transactions by user.
      *
-     * @return A response indicating the deletion status.
+     * @return @return A list of transactions by user.
      */
     @GetMapping("/transaction-history")
     public ResponseEntity<List<TransactionHistory>> getAllTransactionsHistoryForUser() {
@@ -131,10 +131,10 @@ public class WalletController {
     }
 
     /**
-     * Endpoint to show all transactions by user.
+     * Endpoint to show all transactions by wallet.
      *
      * @param walletCode The wallet code.
-     * @return A response indicating the deletion status.
+     * @return A list of transactions by wallet.
      */
     @GetMapping("/wallet-transaction-history/{walletCode}")
     public ResponseEntity<List<TransactionHistory>> getTransactionsHistoryForWallet(@PathVariable String walletCode) {
