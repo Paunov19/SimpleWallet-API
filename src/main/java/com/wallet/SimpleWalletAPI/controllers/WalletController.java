@@ -3,6 +3,8 @@ package com.wallet.SimpleWalletAPI.controllers;
 import com.wallet.SimpleWalletAPI.models.TransactionHistory;
 import com.wallet.SimpleWalletAPI.models.Wallet;
 import com.wallet.SimpleWalletAPI.services.WalletService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +20,9 @@ public class WalletController {
     @Autowired
     private WalletService walletService;
 
-    /**
-     * Endpoint to create a new wallet.
-     *
-     * @param walletName The name of the new wallet.
-     * @return The created wallet details.
-     */
+    @Operation(summary = "Create new wallet")
     @PostMapping("/create-wallet")
-    public ResponseEntity<Wallet> createWallet(@RequestParam String walletName) {
+    public ResponseEntity<Wallet> createWallet(@RequestParam @Parameter(description = "Name of the wallet") String walletName) {
         Wallet wallet = walletService.createWallet(walletName);
         return new ResponseEntity<>(wallet, HttpStatus.CREATED);
     }
