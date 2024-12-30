@@ -74,7 +74,7 @@ public class WalletServiceImpl implements WalletService {
 
         TransactionHistory transaction = new TransactionHistory(null,
                 amount, primaryWallet.getCurrency(), TransactionType.DEPOSIT, LocalDateTime.now(), primaryWallet, user,
-                "Deposit to primary wallet: " + primaryWallet.getWalletName());
+                "Deposit to primary wallet: " + primaryWallet.getWalletName() + " | amount: " + amount + primaryWallet.getCurrency());
         transactionHistoryRepository.save(transaction);
 
         return walletRepository.save(primaryWallet);
@@ -97,12 +97,12 @@ public class WalletServiceImpl implements WalletService {
 
         TransactionHistory transaction = new TransactionHistory(null,
                 amount, primaryWallet.getCurrency(), TransactionType.WITHDRAW, LocalDateTime.now(), primaryWallet, user,
-                "Withdrawal from primary wallet: " + primaryWallet.getWalletName());
+                "Withdrawal from primary wallet: " + primaryWallet.getWalletName() + " | amount: " + amount + primaryWallet.getCurrency());
         transactionHistoryRepository.save(transaction);
         return walletRepository.save(primaryWallet);
     }
 
-//    @Transactional
+    //    @Transactional
     @Override
     public Wallet transferMoneyToAnotherUser(String toWalletCode, BigDecimal amount, String currency) {
         User user = userService.getCurrentAuthenticatedUser();
@@ -131,13 +131,13 @@ public class WalletServiceImpl implements WalletService {
         TransactionHistory transactionFrom = new TransactionHistory(null,
                 amount, senderPrimaryWallet.getCurrency(), TransactionType.TRANSFER_TO_USER, LocalDateTime.now(), senderPrimaryWallet, user,
                 "Transferred to user: " + recipientPrimaryWallet.getUser().getName() + " (Wallet: " + recipientPrimaryWallet.getWalletName() + ")"
-        );
+                        + " | amount: " + amount + senderPrimaryWallet.getCurrency());
         transactionHistoryRepository.save(transactionFrom);
 
         TransactionHistory transactionTo = new TransactionHistory(null,
-                amount, senderPrimaryWallet.getCurrency(), TransactionType.TRANSFER_FROM_USER, LocalDateTime.now(), recipientPrimaryWallet, recipientPrimaryWallet.getUser(),
+                amount, recipientPrimaryWallet.getCurrency(), TransactionType.TRANSFER_FROM_USER, LocalDateTime.now(), recipientPrimaryWallet, recipientPrimaryWallet.getUser(),
                 "Received from user: " + senderPrimaryWallet.getUser() + " (Wallet: " + senderPrimaryWallet.getWalletName() + ")"
-        );
+                        + " | amount: " + amount + recipientPrimaryWallet.getCurrency());
         transactionHistoryRepository.save(transactionTo);
 
         return recipientPrimaryWallet;
@@ -168,15 +168,16 @@ public class WalletServiceImpl implements WalletService {
         TransactionHistory transactionFrom = new TransactionHistory(null,
                 amount, fromWallet.getCurrency(), TransactionType.OWN_TRANSFER, LocalDateTime.now(), fromWallet, user,
                 "Own transfer from wallet: " + fromWallet.getWalletName() + " (" + fromWallet.getWalletCode() + ")" + " -> "
-                + toWallet.getWalletName() + " (" + toWallet.getWalletCode() + ")"
+                        + toWallet.getWalletName() + " (" + toWallet.getWalletCode() + ")" + " | amount: " + amount + fromWallet.getCurrency()
         );
         transactionHistoryRepository.save(transactionFrom);
 
-//        TransactionHistory transactionTo = new TransactionHistory(null,
-//                amount, toWallet.getCurrency(), TransactionType.OWN_TRANSFER, LocalDateTime.now(), toWallet, user,
-//                "Transferred to wallet: " + toWallet.getWalletName() + " (" + toWallet.getWalletCode() + ")"
-//        );
-//        transactionHistoryRepository.save(transactionTo);
+        TransactionHistory transactionTo = new TransactionHistory(null,
+                amount, toWallet.getCurrency(), TransactionType.OWN_TRANSFER, LocalDateTime.now(), toWallet, user,
+                "Own transfer from wallet: " + fromWallet.getWalletName() + " (" + fromWallet.getWalletCode() + ")" + " -> "
+                        + toWallet.getWalletName() + " (" + toWallet.getWalletCode() + ")" + " | amount: " + amount + toWallet.getCurrency()
+        );
+        transactionHistoryRepository.save(transactionTo);
 
         return toWallet;
     }
