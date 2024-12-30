@@ -36,13 +36,14 @@ public class WalletServiceImpl implements WalletService {
         wallet.setPrimary(false);
         String walletCode = UUID.randomUUID().toString().substring(0, 10);
         wallet.setWalletCode(walletCode);
+        walletRepository.save(wallet);
 
         TransactionHistory transaction = new TransactionHistory(null,
                 BigDecimal.ZERO, TransactionType.CREATED, LocalDateTime.now(), wallet, user, "Created wallet: " + wallet.getWalletName()
         );
         transactionHistoryRepository.save(transaction);
 
-        return walletRepository.save(wallet);
+        return wallet;
     }
 
     @Override
@@ -61,12 +62,12 @@ public class WalletServiceImpl implements WalletService {
     @Override
     public Wallet transferMoneyToAnotherUser(String toWalletCode, BigDecimal amount) {
         User user = userService.getCurrentAuthenticatedUser();
-        Wallet senderPrimaryWallet = user.getPrimaryWallet();
+        Wallet senderPrimaryWallet = getUserPrimaryWallet(user);
 
         Wallet targetWallet = walletRepository.findByWalletCode(toWalletCode)
                 .orElseThrow(() -> new RuntimeException("Recipient wallet not found"));
         User recipientUser = targetWallet.getUser();
-        Wallet recipientPrimaryWallet = recipientUser.getPrimaryWallet();
+        Wallet recipientPrimaryWallet = getUserPrimaryWallet(recipientUser);
 
         if (senderPrimaryWallet.getBalance().compareTo(amount) < 0) {
             throw new RuntimeException("Insufficient funds");
@@ -131,22 +132,26 @@ public class WalletServiceImpl implements WalletService {
     @Override
     public Wallet depositToPrimaryWallet(BigDecimal amount) {
         User user = userService.getCurrentAuthenticatedUser();
-        Wallet primaryWallet = user.getPrimaryWallet();
+        Wallet primaryWallet = getUserPrimaryWallet(user);
+
         if (!primaryWallet.isPrimary()) {
             throw new RuntimeException("Operation allowed only on primary wallet");
         }
 
+        primaryWallet.setBalance(primaryWallet.getBalance().add(amount));
+        walletRepository.save(primaryWallet);
+
         TransactionHistory transaction = new TransactionHistory(null,
                 amount, TransactionType.DEPOSIT, LocalDateTime.now(), primaryWallet, user, "Deposit to primary wallet: " + primaryWallet.getWalletName());
         transactionHistoryRepository.save(transaction);
-        primaryWallet.setBalance(primaryWallet.getBalance().add(amount));
-        return walletRepository.save(primaryWallet);
+
+        return primaryWallet;
     }
 
     @Override
     public Wallet withdrawFromPrimaryWallet(BigDecimal amount) {
         User user = userService.getCurrentAuthenticatedUser();
-        Wallet primaryWallet = user.getPrimaryWallet();
+        Wallet primaryWallet = getUserPrimaryWallet(user);
         if (!primaryWallet.isPrimary()) {
             throw new RuntimeException("Operation allowed only on primary wallet");
         }
@@ -154,12 +159,13 @@ public class WalletServiceImpl implements WalletService {
         if (primaryWallet.getBalance().compareTo(amount) < 0) {
             throw new RuntimeException("Insufficient funds");
         }
+        primaryWallet.setBalance(primaryWallet.getBalance().subtract(amount));
+        walletRepository.save(primaryWallet);
 
         TransactionHistory transaction = new TransactionHistory(null,
                 amount, TransactionType.WITHDRAW, LocalDateTime.now(), primaryWallet, user, "Withdrawal from primary wallet: " + primaryWallet.getWalletName());
         transactionHistoryRepository.save(transaction);
-        primaryWallet.setBalance(primaryWallet.getBalance().subtract(amount));
-        return walletRepository.save(primaryWallet);
+        return primaryWallet;
     }
 
     @Override
@@ -173,17 +179,17 @@ public class WalletServiceImpl implements WalletService {
         }
 
         if (wallet.getBalance().compareTo(BigDecimal.ZERO) > 0) {
-            Wallet primaryWallet = user.getPrimaryWallet();
+            Wallet primaryWallet = getUserPrimaryWallet(user);
             primaryWallet.setBalance(primaryWallet.getBalance().add(wallet.getBalance()));
             wallet.setBalance(BigDecimal.ZERO);
             walletRepository.save(primaryWallet);
         }
+        walletRepository.delete(wallet);
 
         TransactionHistory deleteTransaction = new TransactionHistory(null,
                 BigDecimal.ZERO, TransactionType.DELETED, LocalDateTime.now(), wallet, user,
                 "Wallet deleted: " + wallet.getWalletName() + " (" + wallet.getWalletCode() + ")");
         transactionHistoryRepository.save(deleteTransaction);
-        walletRepository.delete(wallet);
     }
 
     @Override
@@ -197,5 +203,17 @@ public class WalletServiceImpl implements WalletService {
         Wallet wallet = walletRepository.findByWalletCode(walletCode)
                 .orElseThrow(() -> new RuntimeException("Wallet not found"));
         return transactionHistoryRepository.findByWallet(wallet);
+    }
+
+    public Wallet getUserPrimaryWallet(User user) {
+        if (user == null || user.getWallets() == null || user.getWallets().isEmpty()) {
+            return null;
+        }
+        for (Wallet wallet : user.getWallets()) {
+            if (wallet.isPrimary()) {
+                return wallet;
+            }
+        }
+        return null;
     }
 }
