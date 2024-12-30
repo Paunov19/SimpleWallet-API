@@ -5,7 +5,6 @@ import com.wallet.SimpleWalletAPI.repositories.TransactionHistoryRepository;
 import com.wallet.SimpleWalletAPI.repositories.WalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -38,6 +37,7 @@ public class WalletServiceImpl implements WalletService {
         wallet.setCurrency(Currency.BGN);
         String walletCode = UUID.randomUUID().toString().replaceAll("[^a-zA-Z0-9]", "").substring(0, 10);
         wallet.setWalletCode(walletCode);
+        walletRepository.save(wallet);
 
         TransactionHistory transaction = new TransactionHistory(null,
                 wallet.getBalance(), wallet.getCurrency(), TransactionType.CREATED, LocalDateTime.now(), wallet, user,
@@ -45,7 +45,7 @@ public class WalletServiceImpl implements WalletService {
         );
         transactionHistoryRepository.save(transaction);
 
-        return walletRepository.save(wallet);
+        return wallet;
     }
 
     @Override
@@ -64,7 +64,7 @@ public class WalletServiceImpl implements WalletService {
     @Override
     public Wallet depositToPrimaryWallet(BigDecimal amount, String currency) {
         User user = userService.getCurrentAuthenticatedUser();
-        Wallet primaryWallet = user.getPrimaryWallet();
+        Wallet primaryWallet = getUserPrimaryWallet(user);
         if (!primaryWallet.isPrimary()) {
             throw new RuntimeException("Operation allowed only on primary wallet");
         }
@@ -74,7 +74,7 @@ public class WalletServiceImpl implements WalletService {
 
         TransactionHistory transaction = new TransactionHistory(null,
                 amount, primaryWallet.getCurrency(), TransactionType.DEPOSIT, LocalDateTime.now(), primaryWallet, user,
-                "Deposit to primary wallet: " + primaryWallet.getWalletName());
+                "Deposit to primary wallet: " + primaryWallet.getWalletName() + " | amount: " + amount + primaryWallet.getCurrency());
         transactionHistoryRepository.save(transaction);
 
         return walletRepository.save(primaryWallet);
@@ -83,7 +83,7 @@ public class WalletServiceImpl implements WalletService {
     @Override
     public Wallet withdrawFromPrimaryWallet(BigDecimal amount, String currency) {
         User user = userService.getCurrentAuthenticatedUser();
-        Wallet primaryWallet = user.getPrimaryWallet();
+        Wallet primaryWallet = getUserPrimaryWallet(user);
         if (!primaryWallet.isPrimary()) {
             throw new RuntimeException("Operation allowed only on primary wallet");
         }
@@ -97,21 +97,21 @@ public class WalletServiceImpl implements WalletService {
 
         TransactionHistory transaction = new TransactionHistory(null,
                 amount, primaryWallet.getCurrency(), TransactionType.WITHDRAW, LocalDateTime.now(), primaryWallet, user,
-                "Withdrawal from primary wallet: " + primaryWallet.getWalletName());
+                "Withdrawal from primary wallet: " + primaryWallet.getWalletName() + " | amount: " + amount + primaryWallet.getCurrency());
         transactionHistoryRepository.save(transaction);
         return walletRepository.save(primaryWallet);
     }
 
-    @Transactional
+    //    @Transactional
     @Override
     public Wallet transferMoneyToAnotherUser(String toWalletCode, BigDecimal amount, String currency) {
         User user = userService.getCurrentAuthenticatedUser();
-        Wallet senderPrimaryWallet = user.getPrimaryWallet();
+        Wallet senderPrimaryWallet = getUserPrimaryWallet(user);
 
         Wallet targetWallet = walletRepository.findByWalletCode(toWalletCode)
                 .orElseThrow(() -> new RuntimeException("Recipient wallet not found"));
         User recipientUser = targetWallet.getUser();
-        Wallet recipientPrimaryWallet = recipientUser.getPrimaryWallet();
+        Wallet recipientPrimaryWallet = getUserPrimaryWallet(recipientUser);
 
         BigDecimal convertedAmount = currencyConverter.convert(amount, senderPrimaryWallet.getCurrency(), Currency.valueOf(currency));
 
@@ -131,19 +131,18 @@ public class WalletServiceImpl implements WalletService {
         TransactionHistory transactionFrom = new TransactionHistory(null,
                 amount, senderPrimaryWallet.getCurrency(), TransactionType.TRANSFER_TO_USER, LocalDateTime.now(), senderPrimaryWallet, user,
                 "Transferred to user: " + recipientPrimaryWallet.getUser().getName() + " (Wallet: " + recipientPrimaryWallet.getWalletName() + ")"
-        );
+                        + " | amount: " + amount + senderPrimaryWallet.getCurrency());
         transactionHistoryRepository.save(transactionFrom);
 
         TransactionHistory transactionTo = new TransactionHistory(null,
-                amount, senderPrimaryWallet.getCurrency(), TransactionType.TRANSFER_FROM_USER, LocalDateTime.now(), recipientPrimaryWallet, recipientPrimaryWallet.getUser(),
+                amount, recipientPrimaryWallet.getCurrency(), TransactionType.TRANSFER_FROM_USER, LocalDateTime.now(), recipientPrimaryWallet, recipientPrimaryWallet.getUser(),
                 "Received from user: " + senderPrimaryWallet.getUser() + " (Wallet: " + senderPrimaryWallet.getWalletName() + ")"
-        );
+                        + " | amount: " + amount + recipientPrimaryWallet.getCurrency());
         transactionHistoryRepository.save(transactionTo);
 
         return recipientPrimaryWallet;
     }
 
-    @Transactional
     @Override
     public Wallet transferBetweenOwnWallets(String fromWalletCode, String toWalletCode, BigDecimal amount, String currency) {
         User user = userService.getCurrentAuthenticatedUser();
@@ -169,15 +168,16 @@ public class WalletServiceImpl implements WalletService {
         TransactionHistory transactionFrom = new TransactionHistory(null,
                 amount, fromWallet.getCurrency(), TransactionType.OWN_TRANSFER, LocalDateTime.now(), fromWallet, user,
                 "Own transfer from wallet: " + fromWallet.getWalletName() + " (" + fromWallet.getWalletCode() + ")" + " -> "
-                + toWallet.getWalletName() + " (" + toWallet.getWalletCode() + ")"
+                        + toWallet.getWalletName() + " (" + toWallet.getWalletCode() + ")" + " | amount: " + amount + fromWallet.getCurrency()
         );
         transactionHistoryRepository.save(transactionFrom);
 
-//        TransactionHistory transactionTo = new TransactionHistory(null,
-//                amount, toWallet.getCurrency(), TransactionType.OWN_TRANSFER, LocalDateTime.now(), toWallet, user,
-//                "Transferred to wallet: " + toWallet.getWalletName() + " (" + toWallet.getWalletCode() + ")"
-//        );
-//        transactionHistoryRepository.save(transactionTo);
+        TransactionHistory transactionTo = new TransactionHistory(null,
+                amount, toWallet.getCurrency(), TransactionType.OWN_TRANSFER, LocalDateTime.now(), toWallet, user,
+                "Own transfer from wallet: " + fromWallet.getWalletName() + " (" + fromWallet.getWalletCode() + ")" + " -> "
+                        + toWallet.getWalletName() + " (" + toWallet.getWalletCode() + ")" + " | amount: " + amount + toWallet.getCurrency()
+        );
+        transactionHistoryRepository.save(transactionTo);
 
         return toWallet;
     }
@@ -217,7 +217,7 @@ public class WalletServiceImpl implements WalletService {
         }
 
         if (wallet.getBalance().compareTo(BigDecimal.ZERO) > 0) {
-            Wallet primaryWallet = user.getPrimaryWallet();
+            Wallet primaryWallet = getUserPrimaryWallet(user);
             BigDecimal convertedBalance = currencyConverter.convert(
                     wallet.getBalance(),
                     wallet.getCurrency(),
@@ -227,13 +227,12 @@ public class WalletServiceImpl implements WalletService {
             wallet.setBalance(BigDecimal.ZERO);
             walletRepository.save(primaryWallet);
         }
+        walletRepository.delete(wallet);
 
         TransactionHistory deleteTransaction = new TransactionHistory(null,
                 BigDecimal.ZERO, wallet.getCurrency(), TransactionType.DELETED, LocalDateTime.now(), wallet, user,
                 "Deleted wallet: " + wallet.getWalletName() + " (" + wallet.getWalletCode() + ")");
         transactionHistoryRepository.save(deleteTransaction);
-
-        walletRepository.delete(wallet);
     }
 
     @Override
@@ -248,5 +247,17 @@ public class WalletServiceImpl implements WalletService {
         Wallet wallet = walletRepository.findByWalletCodeAndUser(walletCode, user)
                 .orElseThrow(() -> new RuntimeException("Wallet not found"));
         return transactionHistoryRepository.findByWallet(wallet);
+    }
+
+    public Wallet getUserPrimaryWallet(User user) {
+        if (user == null || user.getWallets() == null || user.getWallets().isEmpty()) {
+            return null;
+        }
+        for (Wallet wallet : user.getWallets()) {
+            if (wallet.isPrimary()) {
+                return wallet;
+            }
+        }
+        return null;
     }
 }
