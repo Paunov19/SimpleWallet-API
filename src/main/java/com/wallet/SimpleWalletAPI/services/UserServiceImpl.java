@@ -12,7 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.util.ArrayList;
 import java.util.UUID;
 
 @Service
@@ -35,6 +35,10 @@ public class UserServiceImpl implements UserService {
         user.setEmail(userRequest.email());
         user.setPassword(passwordEncoder.encode(userRequest.password()));
 
+        if (user.getWallets() == null) {
+            user.setWallets(new ArrayList<>());
+        }
+        
         Wallet primaryWallet = new Wallet();
         primaryWallet.setWalletName("Primary Wallet");
         primaryWallet.setPrimary(true);
@@ -43,7 +47,7 @@ public class UserServiceImpl implements UserService {
         primaryWallet.setWalletCode(walletCode);
         primaryWallet.setCurrency(Currency.BGN);
 
-        user.setPrimaryWallet(primaryWallet);
+        user.getWallets().add(primaryWallet);
         userRepository.save(user);
         return user;
     }
