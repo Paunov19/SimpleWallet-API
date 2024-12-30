@@ -25,6 +25,10 @@ public class TransactionHistory {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    private Currency currency;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TransactionType transactionType;
 
     @Column(nullable = false)

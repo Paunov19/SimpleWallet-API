@@ -31,6 +31,17 @@ public class WalletController {
     }
 
     /**
+     * Endpoint to get a list of all wallets owned by the current user.
+     *
+     * @return A list of wallets.
+     */
+    @GetMapping
+    public ResponseEntity<List<Wallet>> getAllWallets() {
+        List<Wallet> wallets = walletService.getAllWallets();
+        return ResponseEntity.ok(wallets);
+    }
+
+    /**
      * Endpoint to get details of a specific wallet by its code.
      *
      * @param walletCode The wallet code.
@@ -43,25 +54,14 @@ public class WalletController {
     }
 
     /**
-     * Endpoint to get a list of all wallets owned by the current user.
-     *
-     * @return A list of wallets.
-     */
-    @GetMapping
-    public ResponseEntity<List<Wallet>> getAllWallets() {
-        List<Wallet> wallets = walletService.getAllWallets();
-        return ResponseEntity.ok(wallets);
-    }
-
-    /**
      * Endpoint to deposit money into the primary wallet.
      *
      * @param amount The amount to deposit.
      * @return The updated primary wallet details.
      */
     @PostMapping("/deposit")
-    public ResponseEntity<Wallet> depositToPrimaryWallet(@RequestParam BigDecimal amount) {
-        Wallet wallet = walletService.depositToPrimaryWallet(amount);
+    public ResponseEntity<Wallet> depositToPrimaryWallet(@RequestParam BigDecimal amount, @RequestParam(required = false, defaultValue = "BGN") String currency) {
+        Wallet wallet = walletService.depositToPrimaryWallet(amount, currency);
         return ResponseEntity.ok(wallet);
     }
 
@@ -72,8 +72,8 @@ public class WalletController {
      * @return The updated primary wallet details.
      */
     @PostMapping("/withdraw")
-    public ResponseEntity<Wallet> withdrawFromPrimaryWallet(@RequestParam BigDecimal amount) {
-        Wallet wallet = walletService.withdrawFromPrimaryWallet(amount);
+    public ResponseEntity<Wallet> withdrawFromPrimaryWallet(@RequestParam BigDecimal amount, @RequestParam(required = false, defaultValue = "BGN") String currency) {
+        Wallet wallet = walletService.withdrawFromPrimaryWallet(amount, currency);
         return ResponseEntity.ok(wallet);
     }
 
@@ -86,8 +86,8 @@ public class WalletController {
      */
     @PostMapping("/transfer-to-user")
     public ResponseEntity<Wallet> transferToAnotherUser(@RequestParam String toWalletCode,
-                                                        @RequestParam BigDecimal amount) {
-        Wallet wallet = walletService.transferMoneyToAnotherUser(toWalletCode, amount);
+                                                        @RequestParam BigDecimal amount, @RequestParam(required = false, defaultValue = "BGN") String currency) {
+        Wallet wallet = walletService.transferMoneyToAnotherUser(toWalletCode, amount, currency);
         return ResponseEntity.ok(wallet);
     }
 
@@ -102,9 +102,16 @@ public class WalletController {
     @PostMapping("/transfer-between-own")
     public ResponseEntity<Wallet> transferBetweenOwnWallets(@RequestParam String fromWalletCode,
                                                             @RequestParam String toWalletCode,
-                                                            @RequestParam BigDecimal amount) {
-        Wallet wallet = walletService.transferBetweenOwnWallets(fromWalletCode, toWalletCode, amount);
+                                                            @RequestParam BigDecimal amount, @RequestParam(required = false, defaultValue = "BGN") String currency) {
+        Wallet wallet = walletService.transferBetweenOwnWallets(fromWalletCode, toWalletCode, amount, currency);
         return ResponseEntity.ok(wallet);
+    }
+
+    @PostMapping("/convert-currency")
+    public ResponseEntity<Wallet> convertWalletCurrency(@RequestParam String walletCode,
+                                                        @RequestParam String targetCurrency) {
+        Wallet updatedWallet = walletService.convertWalletCurrency(walletCode, targetCurrency);
+        return ResponseEntity.ok(updatedWallet);
     }
 
     /**
@@ -136,9 +143,9 @@ public class WalletController {
      * @param walletCode The wallet code.
      * @return A list of transactions by wallet.
      */
-    @GetMapping("/wallet-transaction-history/{walletCode}")
+    @GetMapping("/transaction-history/{walletCode}")
     public ResponseEntity<List<TransactionHistory>> getTransactionsHistoryForWallet(@PathVariable String walletCode) {
-        List<TransactionHistory> transactionHistory = walletService.getTransactionsHistoryForWallet(walletCode);
+        List<TransactionHistory> transactionHistory = walletService.getAllTransactionsHistoryForWallet(walletCode);
         return ResponseEntity.ok(transactionHistory);
     }
 }

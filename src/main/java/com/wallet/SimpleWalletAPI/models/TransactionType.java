@@ -7,5 +7,6 @@ public enum TransactionType {
     TRANSFER_TO_USER,
     TRANSFER_FROM_USER,
     OWN_TRANSFER,
+    CURRENCY_CONVERSION,
     DELETED
 }

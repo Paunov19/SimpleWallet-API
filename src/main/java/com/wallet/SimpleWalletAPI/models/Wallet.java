@@ -36,4 +36,7 @@ public class Wallet {
     @JsonBackReference
     private User user;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Currency currency;
 }

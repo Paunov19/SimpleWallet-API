@@ -1,5 +1,6 @@
 package com.wallet.SimpleWalletAPI.services;
 
+import com.wallet.SimpleWalletAPI.models.Currency;
 import com.wallet.SimpleWalletAPI.models.User;
 import com.wallet.SimpleWalletAPI.models.Wallet;
 import com.wallet.SimpleWalletAPI.repositories.UserRepository;
@@ -38,8 +39,9 @@ public class UserServiceImpl implements UserService {
         primaryWallet.setWalletName("Primary Wallet");
         primaryWallet.setPrimary(true);
         primaryWallet.setUser(user);
-        String walletCode = UUID.randomUUID().toString().substring(0, 10);
+        String walletCode = UUID.randomUUID().toString().replaceAll("[^a-zA-Z0-9]", "").substring(0, 10);
         primaryWallet.setWalletCode(walletCode);
+        primaryWallet.setCurrency(Currency.BGN);
 
         user.setPrimaryWallet(primaryWallet);
         userRepository.save(user);
