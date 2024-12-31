@@ -9,11 +9,12 @@ public interface WalletService {
     Wallet createWallet(String walletName);
     Wallet getWalletDetails(String walletCode);
     List<Wallet> getAllWallets();
-    Wallet transferMoneyToAnotherUser(String toWalletCode, BigDecimal amount);
-    Wallet transferBetweenOwnWallets(String fromWalletCode, String toWalletCode, BigDecimal amount);
-    Wallet depositToPrimaryWallet(BigDecimal amount);
-    Wallet withdrawFromPrimaryWallet(BigDecimal amount);
+    Wallet depositToPrimaryWallet(BigDecimal amount, String currency);
+    Wallet withdrawFromPrimaryWallet(BigDecimal amount, String currency);
+    Wallet transferMoneyToAnotherUser(String toWalletCode, BigDecimal amount, String currency);
+    Wallet transferBetweenOwnWallets(String fromWalletCode, String toWalletCode, BigDecimal amount, String currency);
+    Wallet convertWalletCurrency(String walletCode, String targetCurrency);
     void deleteWallet(String walletCode);
     List<TransactionHistory> getAllTransactionsHistoryForCurrentUser();
-    List<TransactionHistory> getTransactionsHistoryForWallet(String walletCode);
+    List<TransactionHistory> getAllTransactionsHistoryForWallet(String walletCode);
 }
