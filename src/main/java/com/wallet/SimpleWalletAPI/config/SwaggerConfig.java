@@ -1,4 +1,4 @@
-package com.wallet.SimpleWalletAPI.swaggerconfig;
+package com.wallet.SimpleWalletAPI.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -14,7 +14,7 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPIWithSecurity() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Wallet Management API")
+                        .title("Simple Wallet Management API")
                         .version("1.0")
                         .description("API documentation for Wallet Management System"))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))

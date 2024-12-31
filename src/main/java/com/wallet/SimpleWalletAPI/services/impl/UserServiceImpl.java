@@ -1,11 +1,12 @@
-package com.wallet.SimpleWalletAPI.services;
+package com.wallet.SimpleWalletAPI.services.impl;
 
 import com.wallet.SimpleWalletAPI.models.Currency;
 import com.wallet.SimpleWalletAPI.models.User;
 import com.wallet.SimpleWalletAPI.models.Wallet;
 import com.wallet.SimpleWalletAPI.repositories.UserRepository;
 import com.wallet.SimpleWalletAPI.security.services.UserDetailsImpl;
-import com.wallet.SimpleWalletAPI.templates.UserRequest;
+import com.wallet.SimpleWalletAPI.services.UserService;
+import com.wallet.SimpleWalletAPI.payload.UserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
