@@ -1,17 +1,17 @@
 package com.wallet.SimpleWalletAPI.services;
 
-import com.wallet.SimpleWalletAPI.models.Wallet;
+import com.wallet.SimpleWalletAPI.dtos.WalletDTO;
 import java.math.BigDecimal;
 import java.util.List;
 
 public interface WalletService {
-    Wallet createWallet(String walletName);
-    Wallet getWalletDetails(String walletCode);
-    List<Wallet> getAllWallets();
-    Wallet depositToPrimaryWallet(BigDecimal amount, String currency);
-    Wallet withdrawFromPrimaryWallet(BigDecimal amount, String currency);
-    Wallet transferMoneyToAnotherUser(String toWalletCode, BigDecimal amount, String currency);
-    Wallet transferBetweenOwnWallets(String fromWalletCode, String toWalletCode, BigDecimal amount, String currency);
-    Wallet convertWalletCurrency(String walletCode, String targetCurrency);
+    WalletDTO createWallet(String walletName);
+    WalletDTO getWalletDetails(String walletCode);
+    List<WalletDTO> getAllWallets();
+    WalletDTO depositToPrimaryWallet(BigDecimal amount, String currency);
+    WalletDTO withdrawFromPrimaryWallet(BigDecimal amount, String currency);
+    WalletDTO transferMoneyToAnotherUser(String toWalletCode, BigDecimal amount, String currency);
+    WalletDTO transferBetweenOwnWallets(String fromWalletCode, String toWalletCode, BigDecimal amount, String currency);
+    WalletDTO convertWalletCurrency(String walletCode, String targetCurrency);
     void deleteWallet(String walletCode);
 }

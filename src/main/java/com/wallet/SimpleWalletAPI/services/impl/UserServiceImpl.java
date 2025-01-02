@@ -1,18 +1,22 @@
 package com.wallet.SimpleWalletAPI.services.impl;
 
+import com.wallet.SimpleWalletAPI.dtos.UserDTO;
+import com.wallet.SimpleWalletAPI.exceptions.UserAlreadyExistsException;
+import com.wallet.SimpleWalletAPI.mappers.UserMapper;
 import com.wallet.SimpleWalletAPI.models.Currency;
 import com.wallet.SimpleWalletAPI.models.User;
 import com.wallet.SimpleWalletAPI.models.Wallet;
+import com.wallet.SimpleWalletAPI.payload.UserRequest;
 import com.wallet.SimpleWalletAPI.repositories.UserRepository;
 import com.wallet.SimpleWalletAPI.security.services.UserDetailsImpl;
 import com.wallet.SimpleWalletAPI.services.UserService;
-import com.wallet.SimpleWalletAPI.payload.UserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -21,14 +25,18 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserMapper userMapper;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
-    public User register(UserRequest userRequest) {
+    public UserDTO register(UserRequest userRequest) {
         if (userRepository.existsByEmail(userRequest.email())) {
-            throw new RuntimeException("Email already exists");
+            throw new UserAlreadyExistsException(userRequest.email());
         }
 
         User user = new User();
@@ -39,7 +47,7 @@ public class UserServiceImpl implements UserService {
         if (user.getWallets() == null) {
             user.setWallets(new ArrayList<>());
         }
-        
+
         Wallet primaryWallet = new Wallet();
         primaryWallet.setWalletName("Primary Wallet");
         primaryWallet.setPrimary(true);
@@ -50,7 +58,8 @@ public class UserServiceImpl implements UserService {
 
         user.getWallets().add(primaryWallet);
         userRepository.save(user);
-        return user;
+
+        return userMapper.entityToDTO(user);
     }
 
     @Override

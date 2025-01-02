@@ -1,10 +1,10 @@
 package com.wallet.SimpleWalletAPI.services;
 
-import com.wallet.SimpleWalletAPI.models.TransactionHistory;
+import com.wallet.SimpleWalletAPI.dtos.TransactionHistoryDTO;
 
 import java.util.List;
 
 public interface TransactionHistoryService {
-    List<TransactionHistory> getAllTransactionsHistoryForCurrentUser();
-    List<TransactionHistory> getAllTransactionsHistoryForWallet(String walletCode);
+    List<TransactionHistoryDTO> getAllTransactionsHistoryForCurrentUser();
+    List<TransactionHistoryDTO> getAllTransactionsHistoryForWallet(String walletCode);
 }

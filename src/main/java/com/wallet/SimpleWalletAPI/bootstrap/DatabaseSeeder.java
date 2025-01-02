@@ -38,19 +38,19 @@ public class DatabaseSeeder implements CommandLineRunner {
     private void seedUsersAndWallets() {
         List<User> users = new ArrayList<>();
         User user1 = new User();
-        user1.setName("TestUser1");
+        user1.setName("Test User1");
         user1.setEmail("user1@test.com");
         user1.setPassword(passwordEncoder.encode("password1"));
         users.add(user1);
 
         User user2 = new User();
-        user2.setName("Test User 2");
+        user2.setName("Test User2");
         user2.setEmail("user2@test.com");
         user2.setPassword(passwordEncoder.encode("password2"));
         users.add(user2);
 
         User user3 = new User();
-        user3.setName("Test User 3");
+        user3.setName("Test User3");
         user3.setEmail("user3@test.com");
         user3.setPassword(passwordEncoder.encode("password3"));
         users.add(user3);
@@ -78,7 +78,6 @@ public class DatabaseSeeder implements CommandLineRunner {
 
             walletRepository.save(primaryWallet);
             walletRepository.save(secondaryWallet);
-
         }
 
         System.out.println("Database seeded with initial data.");

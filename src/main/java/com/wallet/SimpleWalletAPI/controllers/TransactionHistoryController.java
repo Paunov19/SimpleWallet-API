@@ -1,6 +1,6 @@
 package com.wallet.SimpleWalletAPI.controllers;
 
-import com.wallet.SimpleWalletAPI.models.TransactionHistory;
+import com.wallet.SimpleWalletAPI.dtos.TransactionHistoryDTO;
 import com.wallet.SimpleWalletAPI.services.TransactionHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,15 +20,14 @@ public class TransactionHistoryController {
     @Autowired
     private TransactionHistoryService transactionHistoryService;
 
-
     @Operation(
             summary = "Get all transaction history for the current user",
             description = "This endpoint retrieves the full transaction history for the authenticated user. " +
                     "It includes all transactions related to the user's wallets."
     )
     @GetMapping("/")
-    public ResponseEntity<List<TransactionHistory>> getAllTransactionsHistoryForUser() {
-        List<TransactionHistory> transactionHistory = transactionHistoryService.getAllTransactionsHistoryForCurrentUser();
+    public ResponseEntity<List<TransactionHistoryDTO>> getAllTransactionsHistoryForUser() {
+        List<TransactionHistoryDTO> transactionHistory = transactionHistoryService.getAllTransactionsHistoryForCurrentUser();
         return ResponseEntity.ok(transactionHistory);
     }
 
@@ -38,8 +37,8 @@ public class TransactionHistoryController {
                     "User can use the wallet code to track the transactions for that particular wallet."
     )
     @GetMapping("/{walletCode}")
-    public ResponseEntity<List<TransactionHistory>> getTransactionsHistoryForWallet(@PathVariable @Parameter(description = "The wallet code to retrieve wallet transactions") String walletCode) {
-        List<TransactionHistory> transactionHistory = transactionHistoryService.getAllTransactionsHistoryForWallet(walletCode);
+    public ResponseEntity<List<TransactionHistoryDTO>> getTransactionsHistoryForWallet(@PathVariable @Parameter(description = "The wallet code to retrieve wallet transactions") String walletCode) {
+        List<TransactionHistoryDTO> transactionHistory = transactionHistoryService.getAllTransactionsHistoryForWallet(walletCode);
         return ResponseEntity.ok(transactionHistory);
     }
 }
