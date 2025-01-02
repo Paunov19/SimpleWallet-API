@@ -1,6 +1,6 @@
 package com.wallet.SimpleWalletAPI.controllers;
 
-import com.wallet.SimpleWalletAPI.models.User;
+import com.wallet.SimpleWalletAPI.dtos.UserDTO;
 import com.wallet.SimpleWalletAPI.payload.LoginRequest;
 import com.wallet.SimpleWalletAPI.payload.UserRequest;
 import com.wallet.SimpleWalletAPI.repositories.UserRepository;
@@ -41,8 +41,8 @@ public class UserController {
                     "The user will be registered and can then log in to the system."
     )
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody UserRequest userRequest) {
-        User user = userService.register(userRequest);
+    public ResponseEntity<UserDTO> registerUser(@RequestBody UserRequest userRequest) {
+        UserDTO user = userService.register(userRequest);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 

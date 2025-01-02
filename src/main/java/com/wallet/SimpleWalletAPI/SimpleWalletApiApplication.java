@@ -9,8 +9,4 @@ public class SimpleWalletApiApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SimpleWalletApiApplication.class, args);
 	}
-
 }
-//TODO:
-//1. database management updated indexing
-//7.caching and better code refactoring

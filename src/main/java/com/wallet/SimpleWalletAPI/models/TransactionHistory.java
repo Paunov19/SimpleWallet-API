@@ -35,7 +35,7 @@ public class TransactionHistory {
     private LocalDateTime timestamp;
 
     @ManyToOne
-    @JoinColumn(name = "wallet_id", nullable = false)
+    @JoinColumn(name = "wallet_id")
     private Wallet wallet;
 
     @ManyToOne
@@ -44,5 +44,4 @@ public class TransactionHistory {
 
     @Column
     private String description;
-
 }
